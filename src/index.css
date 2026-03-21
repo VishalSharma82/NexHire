@@ -1,0 +1,151 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #3b82f6;
+  --color-primary-light: #60a5fa;
+  --color-secondary: #0f172a;
+  --color-accent: #10b981;
+  --color-background: #030712;
+  --color-surface: #1e293b;
+  
+  --shadow-glow: 0 0 20px rgba(59, 130, 246, 0.4);
+  --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+:root {
+  font-family: 'Inter', system-ui, sans-serif;
+  color-scheme: dark;
+  --bg-color: #030712;
+  --grad-1: #1e1b4b;
+  --grad-2: #0f172a;
+  --primary: #3b82f6; 
+  --text-main: #e2e8f0;
+  --text-muted: #94a3b8;
+  --text-dim: #64748b;
+  --sidebar-bg: rgba(13, 19, 33, 0.8);
+  --glass-bg: rgba(255, 255, 255, 0.03);
+  --glass-border: rgba(255, 255, 255, 0.05);
+  --glass-border-hover: rgba(255, 255, 255, 0.1);
+  --input-bg: rgba(0, 0, 0, 0.2);
+  --card-bg: rgba(15, 23, 42, 0.6);
+}
+
+[data-theme='light'] {
+  color-scheme: light;
+  --bg-color: #f8fafc;
+  --grad-1: #dbeafe;
+  --grad-2: #eff6ff;
+  --text-main: #0f172a;
+  --text-muted: #475569;
+  --text-dim: #94a3b8;
+  --sidebar-bg: rgba(255, 255, 255, 0.85);
+  --glass-bg: rgba(0, 0, 0, 0.02);
+  --glass-border: rgba(0, 0, 0, 0.05);
+  --glass-border-hover: rgba(0, 0, 0, 0.1);
+  --input-bg: rgba(255, 255, 255, 0.8);
+  --card-bg: rgba(255, 255, 255, 0.95);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  overflow: hidden;
+  background: radial-gradient(circle at top right, var(--grad-1), var(--bg-color) 40%),
+              radial-gradient(circle at bottom left, var(--grad-2), var(--bg-color) 40%);
+  background-attachment: fixed;
+  color: var(--text-main);
+  transition: all 0.5s ease;
+}
+
+/* Glassmorphism Classes */
+.glass {
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.glass-card {
+  background: var(--card-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  transition: all 0.3s ease;
+}
+
+.glass-card:hover {
+  border-color: var(--glass-border-hover);
+}
+
+.glass-select {
+  @apply bg-black/40 text-[9px] font-black uppercase tracking-[0.15em] text-gray-400 border border-white/5 rounded-xl px-4 py-2 focus:outline-none transition-all cursor-pointer appearance-none hover:bg-black/60 hover:text-white hover:border-white/20;
+}
+
+/* Fix for default browser selection styles */
+select option {
+  @apply bg-[#0f172a] text-gray-300 py-4;
+}
+
+.glass-nav {
+  background: var(--sidebar-bg);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  border-right: 1px solid var(--glass-border);
+}
+
+/* Custom Scrollbar */
+.chat-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.chat-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.chat-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--glass-border);
+  border-radius: 10px;
+}
+.chat-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--glass-border-hover);
+}
+
+/* Animations */
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* UI Utilities */
+.btn-primary {
+  @apply bg-primary hover:bg-blue-600 text-white rounded-2xl transition-all shadow-xl shadow-primary/30 font-bold text-sm overflow-hidden active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.sidebar-btn {
+  @apply flex items-center gap-3 w-full px-4 py-3 text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--glass-bg)] rounded-2xl transition-all text-xs font-medium border border-transparent hover:border-[var(--glass-border)];
+}
+
+.sidebar-btn.active {
+  @apply bg-primary/10 text-primary border-primary/20;
+}
+
+.sidebar-label {
+  @apply text-[9px] font-black text-[var(--text-dim)] uppercase tracking-[0.2em] mb-3 px-4;
+}
+
+.shadow-glow-blue {
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+}
+
+.shadow-glow-emerald {
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+}
+
+@layer utilities {
+  .text-shadow-sm {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  }
+}
+
