@@ -449,7 +449,7 @@ const Home = () => {
 
         <div className="flex-1 flex overflow-hidden min-h-0 relative">
           <div className={`flex-1 flex flex-col min-h-0 transition-all duration-500 w-full`}>
-            <div className="flex-1 overflow-hidden relative min-h-0 flex flex-col">
+            <div className="flex-1 flex flex-col min-h-0 relative">
               {messages.length === 0 ? (
                 <div className="flex-1 flex flex-col items-center justify-center p-6 text-center max-w-xl mx-auto overflow-y-auto">
                   <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mb-6 shadow-glow-blue/20">

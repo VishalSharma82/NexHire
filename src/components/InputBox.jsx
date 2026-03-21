@@ -1,7 +1,6 @@
 import { useState, useRef } from 'react';
 import { Send, Sparkles, Languages, ChevronDown, Paperclip, FileText, UserCircle } from 'lucide-react';
 import { useInterview } from '../context/InterviewContext';
-import VoiceInput from './VoiceInput';
 import * as pdfjs from 'pdfjs-dist';
 import mammoth from 'mammoth';
 import pdfWorker from 'pdfjs-dist/build/pdf.worker.mjs?url';
@@ -15,10 +14,6 @@ const InputBox = ({ onSend, loading, onCategoryChange, category }) => {
   const [isParsing, setIsParsing] = useState(false);
   const fileInputRef = useRef(null);
   const { mode, toggleMode, persona, setPersona, setResume } = useInterview();
-
-  const handleTranscription = (text) => {
-    setInput(prev => (prev ? prev + ' ' : '') + text);
-  };
 
   const extractPdfText = async (arrayBuffer) => {
     try {
@@ -116,7 +111,7 @@ const InputBox = ({ onSend, loading, onCategoryChange, category }) => {
               onClick={() => setStagedFile(null)}
               className="p-1 hover:bg-white/10 rounded-full transition-colors"
             >
-              <Send size={8} className="rotate-45 text-gray-500 hover:text-red-400" />
+              <svg className="w-2 h-2 text-gray-500 hover:text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </button>
           </div>
         )}
@@ -155,8 +150,6 @@ const InputBox = ({ onSend, loading, onCategoryChange, category }) => {
         </div>
 
         <div className="flex items-center gap-2">
-          {!isParsing && <VoiceInput onTranscription={handleTranscription} />}
-
           <button
             type="submit"
             disabled={loading || isParsing || (!input.trim() && !stagedFile)}
