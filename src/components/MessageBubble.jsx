@@ -37,7 +37,7 @@ const MessageBubble = ({ message }) => {
         </div>
         
         {isBot && (
-          <div className="absolute top-4 -right-12 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-[-10px] group-hover:translate-x-0">
+          <div className="absolute top-2 right-2 sm:top-4 sm:-right-12 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-[-10px] group-hover:translate-x-0 z-10">
             <button
               onClick={handleCopy}
               className="p-2 bg-black/40 backdrop-blur-md border border-white/5 rounded-xl text-gray-500 hover:text-white hover:bg-primary transition-all shadow-xl"

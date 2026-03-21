@@ -307,7 +307,8 @@ const Home = () => {
         )}
       </AnimatePresence>
 
-      <aside className={`fixed lg:relative top-0 left-0 h-full w-72 glass-nav z-50 transform transition-transform duration-500 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
+      <aside className={`fixed lg:relative top-0 left-0 h-full w-72 glass-nav z-50 transform transition-transform duration-500 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0 shadow-2xl lg:shadow-none'}`}>
+
         <div className="flex flex-col h-full p-6">
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-4">
@@ -454,8 +455,10 @@ const Home = () => {
                   <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mb-6 shadow-glow-blue/20">
                     <img src="/logo.png" alt="NexHire" className="w-12 h-12 object-contain drop-shadow-xl" />
                   </div>
-                  <h1 className="text-2xl font-black text-white mb-2 uppercase tracking-tight">Master Your Career</h1>
-                  <p className="text-[10px] text-gray-500 mb-8 max-w-sm mx-auto font-bold uppercase tracking-widest leading-loose">
+                  <h1 className="text-xl sm:text-2xl font-black text-white mb-2 uppercase tracking-tight">Master Your Career</h1>
+
+                  <p className="text-[9px] sm:text-[10px] text-gray-500 mb-8 max-w-sm mx-auto font-bold uppercase tracking-widest leading-loose px-4">
+
                     Welcome back, {user?.user_metadata?.full_name?.split(' ')[0] || 'Professional'}. Practice high-stakes coding or behavioral rounds with real-time feedback.
                   </p>
                   
@@ -481,7 +484,8 @@ const Home = () => {
               )}
             </div>
 
-            <div className="w-full max-w-3xl mx-auto px-4 lg:px-8 pb-8 flex-shrink-0">
+            <div className="w-full max-w-4xl mx-auto px-2 sm:px-4 lg:px-8 pb-4 sm:pb-8 flex-shrink-0">
+
               <InputBox 
                 onSend={handleSend} 
                 loading={loading} 

@@ -3,7 +3,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 export const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
-  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'system');
+  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
   const [accentColor, setAccentColor] = useState(() => localStorage.getItem('accent_color') || '#3b82f6');
 
   useEffect(() => {
@@ -11,13 +11,10 @@ export const ThemeProvider = ({ children }) => {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     
     const applyTheme = (currentTheme) => {
-      let actualTheme = currentTheme;
-      if (currentTheme === 'system') {
-        actualTheme = mediaQuery.matches ? 'dark' : 'light';
-      }
-      root.setAttribute('data-theme', actualTheme);
+      const root = window.document.documentElement;
+      root.setAttribute('data-theme', currentTheme);
       root.classList.remove('light', 'dark');
-      root.classList.add(actualTheme);
+      root.classList.add(currentTheme);
     };
 
     applyTheme(theme);

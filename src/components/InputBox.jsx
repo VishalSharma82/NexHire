@@ -93,7 +93,8 @@ const InputBox = ({ onSend, loading, onCategoryChange, category }) => {
   };
 
   return (
-    <div className="glass-card rounded-[2.5rem] p-3 shadow-2xl relative border border-white/5 group transition-all duration-500 hover:border-white/10 hover:shadow-glow-blue/10">
+    <div className="glass-card rounded-[1.8rem] sm:rounded-[2.5rem] p-2 sm:p-3 shadow-2xl relative border border-white/5 group transition-all duration-500 hover:border-white/10 hover:shadow-glow-blue/10">
+
       <div className="flex items-center justify-between mb-3 px-3">
         <div className="flex gap-2.5">
           <button
@@ -133,11 +134,12 @@ const InputBox = ({ onSend, loading, onCategoryChange, category }) => {
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className={`p-4 transition-colors ${stagedFile ? 'text-primary' : 'text-gray-500 hover:text-primary'}`}
+            className={`p-2 sm:p-4 transition-colors ${stagedFile ? 'text-primary' : 'text-gray-500 hover:text-primary'}`}
             title="Upload Resume (.pdf, .docx, .txt)"
           >
-            <Paperclip size={18} />
+            <Paperclip size={18} className="sm:w-5 sm:h-5 w-4 h-4" />
           </button>
+
         </div>
         
         <div className="flex-1 relative">
@@ -147,7 +149,8 @@ const InputBox = ({ onSend, loading, onCategoryChange, category }) => {
             onChange={(e) => setInput(e.target.value)}
             disabled={loading || isParsing}
             placeholder={isParsing ? "Parsing document..." : loading ? "Analyzing..." : mode === 'normal' ? "What's on your mind?" : "Ask your question or explain your solution..."}
-            className="w-full bg-black/20 text-gray-100 border border-transparent rounded-[1.8rem] px-8 py-5 focus:outline-none focus:bg-black/40 transition-all disabled:opacity-50 text-sm font-medium tracking-tight placeholder-gray-600"
+            className="w-full bg-black/20 text-gray-100 border border-transparent rounded-[1.5rem] sm:rounded-[1.8rem] px-4 sm:px-8 py-3 sm:py-5 focus:outline-none focus:bg-black/40 transition-all disabled:opacity-50 text-xs sm:text-sm font-medium tracking-tight placeholder-gray-600"
+
           />
         </div>
 
@@ -157,7 +160,8 @@ const InputBox = ({ onSend, loading, onCategoryChange, category }) => {
           <button
             type="submit"
             disabled={loading || isParsing || (!input.trim() && !stagedFile)}
-            className="bg-primary hover:bg-blue-600 disabled:bg-gray-800 disabled:opacity-30 text-white w-14 h-14 flex items-center justify-center rounded-[1.5rem] transition-all duration-500 shadow-xl shadow-primary/20 hover:shadow-glow-blue/30 active:scale-90 group"
+            className="bg-primary hover:bg-blue-600 disabled:bg-gray-800 disabled:opacity-30 text-white w-10 h-10 sm:w-14 sm:h-14 flex items-center justify-center rounded-[1rem] sm:rounded-[1.5rem] transition-all duration-500 shadow-xl shadow-primary/20 hover:shadow-glow-blue/30 active:scale-90 group"
+
           >
             {isParsing ? (
               <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

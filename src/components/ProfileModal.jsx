@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, User, Mail, Shield, Calendar, Award, Trophy, Target, Edit2, Check, Loader2 } from 'lucide-react';
+import { X, User, Mail, Shield, Calendar, Award, Trophy, Target, Edit2, Check, Loader2, Camera, Upload } from 'lucide-react';
+import { supabase } from '../utils/supabase';
+
 import { useAuth } from '../context/AuthContext';
 
 const ProfileModal = ({ isOpen, onClose, user, mode, stats }) => {
@@ -9,6 +11,9 @@ const ProfileModal = ({ isOpen, onClose, user, mode, stats }) => {
   const [editName, setEditName] = useState(user?.user_metadata?.full_name || '');
   const [editAvatar, setEditAvatar] = useState(user?.user_metadata?.avatar_url || '');
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = React.useRef(null);
+
 
   if (!isOpen) return null;
 
@@ -28,6 +33,48 @@ const ProfileModal = ({ isOpen, onClose, user, mode, stats }) => {
       setIsSaving(false);
     }
   };
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please upload an image file.');
+      return;
+    }
+
+    // Validate size (e.g., 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      alert('File size must be less than 2MB.');
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      setEditAvatar(publicUrl);
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      alert('Error uploading image. Make sure the "avatars" bucket is created and public.');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
 
   const joinedDate = user?.created_at ? new Date(user.created_at).toLocaleDateString('en-US', {
     month: 'long',
@@ -65,18 +112,44 @@ const ProfileModal = ({ isOpen, onClose, user, mode, stats }) => {
             {/* Avatar & Basic Info */}
             <div className="relative -mt-12 mb-6 flex items-end justify-between">
               <div className="flex items-end gap-6">
-                <div className="relative">
-                  {user?.user_metadata?.avatar_url ? (
-                    <img src={user.user_metadata.avatar_url} alt="Profile" className="w-24 h-24 rounded-2xl border-4 border-[#0d121f] shadow-2xl object-cover" />
+                <div className="relative group/avatar">
+                  {editAvatar ? (
+                    <img src={editAvatar} alt="Profile" className="w-24 h-24 rounded-2xl border-4 border-[#0d121f] shadow-2xl object-cover" />
                   ) : (
                     <div className="w-24 h-24 rounded-2xl border-4 border-[#0d121f] bg-primary/20 flex items-center justify-center text-3xl font-black text-primary shadow-2xl">
                       {user?.email?.[0].toUpperCase()}
                     </div>
                   )}
+                  
+                  {isEditing && (
+                    <div 
+                      onClick={() => fileInputRef.current?.click()}
+                      className="absolute inset-0 bg-black/60 rounded-2xl flex flex-col items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity cursor-pointer border-4 border-transparent hover:border-primary/50"
+                    >
+                      {isUploading ? (
+                        <Loader2 size={24} className="text-white animate-spin" />
+                      ) : (
+                        <>
+                          <Camera size={24} className="text-white mb-1" />
+                          <span className="text-[8px] font-black text-white uppercase">Change</span>
+                        </>
+                      )}
+                    </div>
+                  )}
+
+                  <input 
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleImageUpload}
+                    className="hidden"
+                    accept="image/*"
+                  />
+                  
                   <div className="absolute -bottom-2 -right-2 bg-accent p-1.5 rounded-lg shadow-lg border-2 border-[#0d121f]">
                     <Shield size={14} className="text-white" />
                   </div>
                 </div>
+
                 <div className="pb-1">
                   {isEditing ? (
                     <div className="space-y-3">
