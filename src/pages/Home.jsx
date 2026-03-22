@@ -27,11 +27,12 @@ const Home = () => {
   const [isResumeModalOpen, setIsResumeModalOpen] = useState(false);
   const [isPathModalOpen, setIsPathModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isKeySettingsOpen, setIsKeySettingsOpen] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
   
   const [sessions, setSessions] = useState([]);
   const [currentSessionId, setCurrentSessionId] = useState(null);
-  const { stats, incrementQuestions, mode, resume, persona, setMode, apiKey } = useInterview();
+  const { stats, incrementQuestions, mode, resume, persona, setMode, openaiKey, geminiKey } = useInterview();
   const { theme, setTheme } = useTheme();
   const { user, loading: authLoading, signInWithGoogle, signUp, signInWithPassword, signOut } = useAuth();
   const { isVoiceEnabled, setIsVoiceEnabled, speak, stopSpeaking } = useVoice();
@@ -127,7 +128,8 @@ const Home = () => {
         mode,
         resume: overrideResume || resume,
         persona,
-        apiKey
+        openaiKey,
+        geminiKey
       });
       const cleanMessage = response.replace(/:::code-sync[\s\S]*?:::/g, '').trim();
       addMessage(cleanMessage, 'bot');
@@ -300,6 +302,7 @@ const Home = () => {
         onClose={() => setIsPathModalOpen(false)} 
         onStartTraining={startRoadmapTraining}
       />
+      <KeySettings isOpen={isKeySettingsOpen} onClose={() => setIsKeySettingsOpen(false)} />
 
       <AnimatePresence>
         {isSidebarOpen && (
@@ -457,6 +460,14 @@ const Home = () => {
                   </p>
                 </div>
               </div>
+
+              <button 
+                onClick={() => setIsKeySettingsOpen(true)}
+                className="p-2.5 bg-white/5 border border-white/10 rounded-xl text-gray-400 hover:text-primary hover:bg-primary/10 transition-all"
+                title="AI Configuration"
+              >
+                <KeyIcon size={18} className="sm:w-5 sm:h-5 w-4 h-4" />
+              </button>
 
               <button 
                 onClick={signOut}

@@ -4,12 +4,14 @@ import { Key, X, Check, AlertCircle } from 'lucide-react';
 import { useInterview } from '../context/InterviewContext';
 
 const KeySettings = ({ isOpen, onClose }) => {
-  const { apiKey, setApiKey } = useInterview();
-  const [tempKey, setTempKey] = useState(apiKey);
+  const { openaiKey, setOpenaiKey, geminiKey, setGeminiKey } = useInterview();
+  const [tempOpenaiKey, setTempOpenaiKey] = useState(openaiKey);
+  const [tempGeminiKey, setTempGeminiKey] = useState(geminiKey);
   const [saved, setSaved] = useState(false);
 
   const handleSave = () => {
-    setApiKey(tempKey);
+    setOpenaiKey(tempOpenaiKey);
+    setGeminiKey(tempGeminiKey);
     setSaved(true);
     setTimeout(() => {
       setSaved(false);
@@ -48,18 +50,31 @@ const KeySettings = ({ isOpen, onClose }) => {
             </div>
 
             <p className="text-sm text-gray-400 mb-6 leading-relaxed">
-              Enter your **OpenAI API Key** to enable real-time, context-aware interview sessions. Your key is stored locally in your browser and never sent anywhere else.
+              Enter your **API Keys** to enable real-time, context-aware interview sessions. Your keys are stored locally in your browser and never sent anywhere else.
             </p>
 
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div>
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 px-1">OpenAI API Key</label>
                 <div className="relative">
                   <input
                     type="password"
-                    value={tempKey}
-                    onChange={(e) => setTempKey(e.target.value)}
+                    value={tempOpenaiKey}
+                    onChange={(e) => setTempOpenaiKey(e.target.value)}
                     placeholder="sk-..."
+                    className="w-full bg-[#0f172a] text-gray-100 border border-[#334155] rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm font-mono shadow-inner"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 px-1">Gemini API Key</label>
+                <div className="relative">
+                  <input
+                    type="password"
+                    value={tempGeminiKey}
+                    onChange={(e) => setTempGeminiKey(e.target.value)}
+                    placeholder="AIza..."
                     className="w-full bg-[#0f172a] text-gray-100 border border-[#334155] rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm font-mono shadow-inner"
                   />
                 </div>
@@ -68,7 +83,7 @@ const KeySettings = ({ isOpen, onClose }) => {
               <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl flex gap-3">
                 <AlertCircle size={18} className="text-amber-500 shrink-0 mt-0.5" />
                 <p className="text-[11px] text-amber-500/90 leading-normal">
-                  No API Key? The coach will fall back to smart mock mode. To get an OpenAI key, visit the <a href="https://platform.openai.com/api-keys" target="_blank" rel="noreferrer" className="underline font-bold">OpenAI Dashboard</a>.
+                  No API Keys? The coach will fall back to platform default keys or smart mock mode. To get keys, visit <a href="https://platform.openai.com/api-keys" target="_blank" rel="noreferrer" className="underline font-bold">OpenAI</a> or <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer" className="underline font-bold">Gemini</a> dashboards.
                 </p>
               </div>
 

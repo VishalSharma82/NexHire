@@ -9,7 +9,8 @@ export const getAIResponse = async (input, config = {}) => {
     mode = "coach", 
     resume = "", 
     persona = "supportive",
-    apiKey = ""
+    openaiKey = "",
+    geminiKey = ""
   } = config;
 
   // Real Backend Proxy Call
@@ -52,10 +53,10 @@ export const getAIResponse = async (input, config = {}) => {
           { role: "system", content: systemPrompt },
           { role: "user", content: input }
         ],
-        model: "gpt-4o",
         temperature: 0.7,
         config: { category },
-        apiKey: apiKey // Pass user's browser-stored key
+        openaiKey,
+        geminiKey
       }),
     });
 

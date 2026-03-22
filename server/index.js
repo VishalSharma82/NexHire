@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import OpenAI from 'openai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import Chat from './models/Chat.js';
 
 dotenv.config();
@@ -19,6 +20,10 @@ if (process.env.OPENAI_API_KEY) {
   console.log('OpenAI Key Loaded: Yes (Start: ' + process.env.OPENAI_API_KEY.substring(0, 10) + '...)');
 } else {
   console.log('OpenAI Key Loaded: No');
+}
+
+if (process.env.GEMINI_API_KEY) {
+  console.log('Gemini Key Loaded: Yes');
 }
 
 const mockResponses = {
@@ -81,30 +86,100 @@ app.delete('/api/history', async (req, res) => {
   }
 });
 
-// OpenAI Proxy Routes
+// AI Chat Proxy Routes
 app.post('/api/chat', async (req, res) => {
   try {
-    const { messages, model, temperature, apiKey, config = {} } = req.body;
+    const { messages, model, temperature, openaiKey, geminiKey, config = {} } = req.body;
     
-    // Choose the key: User-provided key (from frontend modal) > Server environment key
-    const targetApiKey = apiKey || process.env.OPENAI_API_KEY;
-    
-    if (!targetApiKey) {
-      throw { status: 401, message: "No API key provided" };
+    // 1. Try GEMINI if user provided a key
+    if (geminiKey) {
+      try {
+        const genAI = new GoogleGenerativeAI(geminiKey);
+        
+        // Extract system prompt if it exists as the first message
+        let systemInstruction = "";
+        let chatMessages = [...messages];
+        if (messages.length > 0 && messages[0].role === 'system') {
+          systemInstruction = messages[0].content;
+          chatMessages = messages.slice(1);
+        }
+
+        const geminiModel = genAI.getGenerativeModel({ 
+          model: "gemini-1.5-flash",
+          systemInstruction: systemInstruction 
+        });
+        
+        // Convert remaining messages to Gemini format (excluding the last one which is sent via sendMessage)
+        const history = chatMessages.slice(0, -1).map(m => ({
+          role: m.role === 'user' ? 'user' : 'model',
+          parts: [{ text: m.content }]
+        }));
+        const lastMessage = chatMessages[chatMessages.length - 1].content;
+        
+        const chat = geminiModel.startChat({ history });
+        const result = await chat.sendMessage(lastMessage);
+        const text = result.response.text();
+
+        return res.json({
+          choices: [{
+            message: { content: text }
+          }]
+        });
+      } catch (geminiErr) {
+        console.error('User Gemini Key Error:', geminiErr);
+        // If user key fails, we'll continue to OpenAI fallback or platform default
+      }
     }
 
-    // Create a temporary OpenAI client for this request if a custom key is provided
-    const client = apiKey ? new OpenAI({ apiKey }) : openai;
+    // 2. Try OPENAI (User Key or System Key)
+    const targetOpenaiKey = openaiKey || process.env.OPENAI_API_KEY;
+    
+    if (targetOpenaiKey) {
+      const client = openaiKey ? new OpenAI({ apiKey: openaiKey }) : openai;
+      const completion = await client.chat.completions.create({
+        model: model || "gpt-4o",
+        messages,
+        temperature: temperature || 0.7,
+      });
+      return res.json(completion);
+    }
 
-    const completion = await client.chat.completions.create({
-      model: model || "gpt-4o",
-      messages,
-      temperature: temperature || 0.7,
-    });
-    res.json(completion);
+    // 3. Last Resort: System Gemini (if configured in .env)
+    if (process.env.GEMINI_API_KEY) {
+      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+      
+      let systemInstruction = "";
+      let chatMessages = [...messages];
+      if (messages.length > 0 && messages[0].role === 'system') {
+        systemInstruction = messages[0].content;
+        chatMessages = messages.slice(1);
+      }
+
+      const geminiModel = genAI.getGenerativeModel({ 
+        model: "gemini-1.5-flash",
+        systemInstruction: systemInstruction
+      });
+      
+      const history = chatMessages.slice(0, -1).map(m => ({
+        role: m.role === 'user' ? 'user' : 'model',
+        parts: [{ text: m.content }]
+      }));
+      const lastMessage = chatMessages[chatMessages.length - 1].content;
+      
+      const chat = geminiModel.startChat({ history });
+      const result = await chat.sendMessage(lastMessage);
+      return res.json({
+        choices: [{
+          message: { content: result.response.text() }
+        }]
+      });
+    }
+
+    throw { status: 401, message: "No API key available" };
+
   } catch (err) {
     if (err.status === 401 || (err.message && err.message.includes('401')) || !process.env.OPENAI_API_KEY) {
-      console.warn('OpenAI Auth Error (401) or Missing Key. Falling back to Mock responses.');
+      console.warn('AI Auth Error or Missing Key. Falling back to Mock responses.');
       
       const { category = "frontend" } = req.body.config || {};
       const userMessage = req.body.messages[req.body.messages.length - 1].content.toLowerCase();
@@ -126,7 +201,7 @@ app.post('/api/chat', async (req, res) => {
       });
     }
 
-    console.error('OpenAI Chat Error:', err);
+    console.error('AI Chat Error:', err);
     res.status(500).json({ error: err.message });
   }
 });

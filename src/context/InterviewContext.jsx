@@ -22,7 +22,8 @@ export const InterviewProvider = ({ children }) => {
     }
   };
 
-  const [apiKey, setApiKey] = useState(() => getSafeItem('openai_api_key', ''));
+  const [openaiKey, setOpenaiKey] = useState(() => getSafeItem('openai_api_key', ''));
+  const [geminiKey, setGeminiKey] = useState(() => getSafeItem('gemini_api_key', ''));
   const [resume, setResume] = useState(() => getSafeItem('user_resume', ''));
   const [persona, setPersona] = useState('supportive'); 
   const [code, setCode] = useState('// Your code here...\n\nfunction solution() {\n  return 0;\n}');
@@ -38,8 +39,12 @@ export const InterviewProvider = ({ children }) => {
   }));
 
   useEffect(() => {
-    localStorage.setItem('openai_api_key', apiKey);
-  }, [apiKey]);
+    localStorage.setItem('openai_api_key', openaiKey);
+  }, [openaiKey]);
+
+  useEffect(() => {
+    localStorage.setItem('gemini_api_key', geminiKey);
+  }, [geminiKey]);
 
   useEffect(() => {
     localStorage.setItem('user_resume', resume);
@@ -89,8 +94,10 @@ export const InterviewProvider = ({ children }) => {
       mode, 
       setMode, 
       toggleMode, 
-      apiKey, 
-      setApiKey,
+      openaiKey, 
+      setOpenaiKey,
+      geminiKey,
+      setGeminiKey,
       resume,
       setResume,
       persona,
