@@ -31,7 +31,7 @@ const Home = () => {
   
   const [sessions, setSessions] = useState([]);
   const [currentSessionId, setCurrentSessionId] = useState(null);
-  const { stats, incrementQuestions, mode, resume, persona, setMode } = useInterview();
+  const { stats, incrementQuestions, mode, resume, persona, setMode, apiKey } = useInterview();
   const { theme, setTheme } = useTheme();
   const { user, loading: authLoading, signInWithGoogle, signUp, signInWithPassword, signOut } = useAuth();
   const { isVoiceEnabled, setIsVoiceEnabled, speak, stopSpeaking } = useVoice();
@@ -126,7 +126,8 @@ const Home = () => {
         category,
         mode,
         resume: overrideResume || resume,
-        persona
+        persona,
+        apiKey
       });
       const cleanMessage = response.replace(/:::code-sync[\s\S]*?:::/g, '').trim();
       addMessage(cleanMessage, 'bot');

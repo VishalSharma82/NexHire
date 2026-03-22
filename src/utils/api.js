@@ -1,57 +1,19 @@
-import OpenAI from 'openai';
+// import OpenAI from 'openai';
 
-const mockResponses = {
-  react: [
-    "### React Fundamentals\n\nReact is a **declarative, component-based** library for building UIs. Here are key concepts:\n\n* **JSX**: Syntax sugar for `React.createElement`.\n* **Components**: Independent, reusable pieces of UI.\n* **Props**: How we pass data between components.\n\n```javascript\nfunction Welcome(props) {\n  return <h1>Hello, {props.name}</h1>;\n}\n```",
-    "### The Virtual DOM\n\nThe **Virtual DOM** is a programming concept where an 'ideal', or 'virtual', representation of a UI is kept in memory and synced with the 'real' DOM.\n\n> **Note**: This process is called **reconciliation**.",
-    "### React Hooks\n\nHooks let you use state and other React features without writing a class. Some common hooks:\n\n1. `useState`: Track state in functional components.\n2. `useEffect`: Handle side effects (API calls, subscriptions).\n3. `useContext`: Access React Context.\n\n```javascript\nconst [count, setCount] = useState(0);\n```",
-    "### State vs Props\n\n| Feature | Props | State |\n| :--- | :--- | :--- |\n| Read-only | Yes | No (Mutable) |\n| Ownership | Parent | Component itself |\n| Triggers re-render | Yes | Yes |"
-  ],
-  dsa: [
-    "### Linked Lists\n\nA **Linked List** consists of nodes where each node contains data and a reference to the next node.\n\n* **Pros**: Dynamic size, easy insertion/deletion.\n* **Cons**: No random access, extra memory for pointers.\n\n```python\nclass Node:\n    def __init__(self, data):\n        self.data = data\n        self.next = None\n```",
-    "### Binary Search\n\nBinary search find the position of a target value within a **sorted** array.\n\n**Time Complexity**: $O(\\log n)$\n\n```javascript\nfunction binarySearch(arr, target) {\n  let left = 0, right = arr.length - 1;\n  while (left <= right) {\n    let mid = Math.floor((left + right) / 2);\n    if (arr[mid] === target) return mid;\n    if (arr[mid] < target) left = mid + 1;\n    else right = mid - 1;\n  }\n  return -1;\n}\n```"
-  ],
-  default: [
-    "### Welcome to AI Interview Coach!\n\nI'm here to help you get that dream job. You can ask me about:\n\n*   **Technical concepts** (React, JS, CSS)\n*   **Algorithms** (DSA basics)\n*   **System Design**\n*   **HR Tips**\n\nWhat would you like to focus on today?"
-  ]
-};
+// Mock responses moved to backend for consistent fallback
 
 export const getAIResponse = async (input, config = {}) => {
   // Priority: 1. .env key (System), 2. Manual config key (Legacy)
-  const apiKey = import.meta.env.VITE_OPENAI_API_KEY || config.apiKey || "";
   const { 
     category = "frontend", 
     mode = "coach", 
     resume = "", 
-    persona = "supportive" 
+    persona = "supportive",
+    apiKey = ""
   } = config;
 
-  if (!apiKey) {
-
-    // Fallback to Mock Responses
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    const lowerInput = input.toLowerCase();
-    let categoryKey = "default";
-
-    if (category === "frontend" || lowerInput.includes("react") || lowerInput.includes("js") || lowerInput.includes("css")) {
-      categoryKey = "react";
-    } else if (category === "dsa" || lowerInput.includes("algorithm") || lowerInput.includes("data structure")) {
-      categoryKey = "dsa";
-    }
-
-    const categoryResponses = mockResponses[categoryKey] || mockResponses.default;
-    const randomIndex = Math.floor(Math.random() * categoryResponses.length);
-    return `> **[MOCK MODE ACTIVE]** Bhai, real AI response ke liye API Key zaruri hai. Tab tak ye demo dekho:\n\n${categoryResponses[randomIndex]}`;
-  }
-
-  // Real OpenAI Call
+  // Real Backend Proxy Call
   try {
-    const openai = new OpenAI({
-      apiKey,
-      dangerouslyAllowBrowser: true,
-      timeout: 30000 // 30 seconds timeout for long stories
-    });
-
     const currentDate = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
     
     const systemPrompt = mode === 'normal' 
@@ -79,16 +41,30 @@ export const getAIResponse = async (input, config = {}) => {
       2. If the user shares a long story or project history, ANALYZE it professionally. 
       3. Identify their skills, roles, and potential value based on their narrative.
     `;
-
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: input }
-      ],
-      temperature: 0.7,
+    
+    const response = await fetch('http://localhost:5000/api/chat', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: input }
+        ],
+        model: "gpt-4o",
+        temperature: 0.7,
+        config: { category },
+        apiKey: apiKey // Pass user's browser-stored key
+      }),
     });
 
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Failed to get AI response from server");
+    }
+
+    const completion = await response.json();
     return completion.choices[0].message.content;
   } catch (error) {
     console.error("OpenAI Error:", error);
@@ -97,29 +73,25 @@ export const getAIResponse = async (input, config = {}) => {
 };
 
 export const getSpeechResponse = async (text) => {
-  const apiKey = import.meta.env.VITE_OPENAI_API_KEY || "";
-  if (!apiKey) {
-    // Fallback to Browser TTS if no API key
-    return new Promise((resolve) => {
-      const utterance = new SpeechSynthesisUtterance(text);
-      window.speechSynthesis.speak(utterance);
-      resolve(null); // Return null since we're using browser TTS directly
-    });
-  }
-
   try {
-    const openai = new OpenAI({
-      apiKey,
-      dangerouslyAllowBrowser: true,
+    const response = await fetch('http://localhost:5000/api/tts', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        text,
+        voice: "alloy",
+        model: "tts-1",
+      }),
     });
 
-    const mp3 = await openai.audio.speech.create({
-      model: "tts-1",
-      voice: "alloy", // alloy, echo, fable, onyx, nova, shimmer
-      input: text,
-    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Failed to get TTS response from server");
+    }
 
-    const blob = new Blob([await mp3.arrayBuffer()], { type: 'audio/mpeg' });
+    const blob = await response.blob();
     return URL.createObjectURL(blob);
   } catch (error) {
     console.error("TTS Error:", error);
