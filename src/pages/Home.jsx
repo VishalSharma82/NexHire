@@ -282,7 +282,7 @@ const Home = () => {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden font-sans text-gray-200 bg-[#0a0f1a]">
+    <div className="flex h-[100dvh] overflow-hidden font-sans text-gray-200 bg-[#0a0f1a]">
       <div className="fixed inset-0 pointer-events-none opacity-40">
         <div className="absolute top-0 -left-1/4 w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px]" />
         <div className="absolute bottom-0 -right-1/4 w-[500px] h-[500px] bg-accent/10 rounded-full blur-[120px]" />
@@ -484,7 +484,7 @@ const Home = () => {
               )}
             </div>
 
-            <div className="w-full max-w-4xl mx-auto px-2 sm:px-4 lg:px-8 pb-4 sm:pb-8 flex-shrink-0">
+            <div className="w-full max-w-4xl mx-auto px-2 sm:px-4 lg:px-8 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:pb-8 flex-shrink-0">
 
               <InputBox 
                 onSend={handleSend} 
