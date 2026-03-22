@@ -16,7 +16,8 @@ import { listSessions, getSessionMessages, saveSession, deleteSession, clearAllD
 import { useInterview } from '../context/InterviewContext';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
-import { Sun, Moon, Monitor, Facebook, User, Clock, Trash } from 'lucide-react';
+import { useVoice } from '../context/VoiceContext';
+import { Sun, Moon, Monitor, Facebook, User, Clock, Trash, Mic2 } from 'lucide-react';
 
 const Home = () => {
   const [messages, setMessages] = useState([]);
@@ -30,9 +31,10 @@ const Home = () => {
   
   const [sessions, setSessions] = useState([]);
   const [currentSessionId, setCurrentSessionId] = useState(null);
-  const { stats, incrementQuestions, mode, resume, persona } = useInterview();
+  const { stats, incrementQuestions, mode, resume, persona, setMode } = useInterview();
   const { theme, setTheme } = useTheme();
   const { user, loading: authLoading, signInWithGoogle, signUp, signInWithPassword, signOut } = useAuth();
+  const { isVoiceEnabled, setIsVoiceEnabled, speak, stopSpeaking } = useVoice();
   
   const [isSignUp, setIsSignUp] = useState(false);
   const [authForm, setAuthForm] = useState({ email: '', password: '', name: '', confirmPassword: '' });
@@ -129,6 +131,9 @@ const Home = () => {
       const cleanMessage = response.replace(/:::code-sync[\s\S]*?:::/g, '').trim();
       addMessage(cleanMessage, 'bot');
       incrementQuestions();
+      if (isVoiceEnabled) {
+        speak(cleanMessage);
+      }
     } catch {
       addMessage("### Oops! Something went wrong.\n\nPlease try again later. The connection to the AI Coach might be unstable.", 'bot');
     } finally {
@@ -338,6 +343,19 @@ const Home = () => {
             New Interview
           </button>
 
+          <button 
+            onClick={() => {
+              setMode('interviewer');
+              setIsVoiceEnabled(true);
+              startNewInterview();
+            }}
+            className="w-full flex items-center justify-center gap-2 py-4 mb-4 bg-orange-500/20 border border-orange-500/30 rounded-2xl text-white font-black hover:bg-orange-500/30 transition-all group shadow-glow-orange/10 relative overflow-hidden"
+          >
+            <div className="absolute top-2 right-2 bg-orange-500 text-[6px] px-1 rounded-full animate-bounce">NEW</div>
+            <Mic2 size={18} className="text-orange-400 group-hover:scale-125 transition-transform" />
+            Voice Interview Lab
+          </button>
+
           <nav className="flex-1 flex flex-col min-h-0">
             {/* Fixed Modules Section - No Scroll */}
             <div className="flex-shrink-0 mb-8 pr-2">
@@ -400,52 +418,55 @@ const Home = () => {
               </div>
             </div>
           </nav>
-
-          <div className="pt-6 border-t border-white/5 mt-auto">
-            <div 
-              onClick={() => setIsProfileModalOpen(true)}
-              className="px-4 py-3 bg-white/5 rounded-2xl flex items-center gap-3 border border-white/5 cursor-pointer hover:bg-white/10 transition-all group"
-            >
-              <div className="relative">
-                {user?.user_metadata?.avatar_url ? (
-                  <img src={user.user_metadata.avatar_url} alt="User" className="w-9 h-9 rounded-xl border border-primary/20" />
-                ) : (
-                  <div className="w-9 h-9 bg-primary/20 rounded-xl flex items-center justify-center text-xs font-black text-primary border border-primary/30 uppercase">
-                    {user?.email?.[0]}
-                  </div>
-                )}
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 border-2 border-[#0a0f1a] rounded-full shadow-glow-emerald" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[11px] font-black text-white truncate leading-none mb-1">
-                  {user?.user_metadata?.full_name || user?.email?.split('@')[0]}
-                </p>
-                <div className="flex items-center gap-1.5">
-                  <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
-                  <p className="text-[8px] text-gray-500 font-bold uppercase tracking-widest">{mode} Coach</p>
-                </div>
-              </div>
-              <Settings size={14} className="text-gray-600 group-hover:text-primary transition-colors" />
-            </div>
-            
-            <button 
-              onClick={signOut}
-              className="w-full mt-3 py-3 flex items-center justify-center gap-2 text-[9px] font-bold uppercase tracking-[0.2em] text-gray-500 hover:text-red-400 transition-colors"
-            >
-              <LogOut size={12} />
-              Terminate Session
-            </button>
-          </div>
         </div>
       </aside>
 
       <main className="flex-1 flex flex-col min-w-0 bg-[#0a0f1a]/50 backdrop-blur-sm relative">
-        <button 
-          onClick={() => setIsSidebarOpen(true)} 
-          className="lg:hidden absolute top-4 left-4 z-40 p-2.5 bg-white/5 border border-white/10 rounded-xl text-gray-400 backdrop-blur-md"
-        >
-          <Menu size={20} />
-        </button>
+        <header className="sticky top-0 z-30 w-full glass-nav border-b border-white/5 backdrop-blur-xl flex-shrink-0">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-12 sm:h-16 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <button 
+                onClick={() => setIsSidebarOpen(true)} 
+                className="lg:hidden p-2.5 bg-white/5 border border-white/10 rounded-xl text-gray-400 backdrop-blur-md hover:bg-white/10 transition-all"
+              >
+                <Menu size={20} />
+              </button>
+            </div>
+
+            <div className="flex items-center gap-2 sm:gap-4">
+              <div 
+                onClick={() => setIsProfileModalOpen(true)}
+                className="relative cursor-pointer group"
+              >
+                <div className="relative">
+                  {user?.user_metadata?.avatar_url ? (
+                    <img src={user.user_metadata.avatar_url} alt="User" className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl border border-primary/20 hover:border-primary/50 transition-all shadow-glow-blue/5" />
+                  ) : (
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary/20 rounded-xl flex items-center justify-center text-[10px] sm:text-xs font-black text-primary border border-primary/30 uppercase hover:bg-primary/30 transition-all">
+                      {user?.email?.[0]}
+                    </div>
+                  )}
+                  <div className="absolute -top-1 -right-1 w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 bg-green-500 border-2 border-[#0a0f1a] rounded-full shadow-glow-emerald" />
+                </div>
+                
+                {/* Tooltip for name on hover */}
+                <div className="absolute top-full right-0 mt-2 py-1 px-2 bg-black/80 backdrop-blur-md rounded-lg border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+                  <p className="text-[10px] font-bold text-white uppercase tracking-widest leading-none">
+                    {user?.user_metadata?.full_name || user?.email?.split('@')[0]}
+                  </p>
+                </div>
+              </div>
+
+              <button 
+                onClick={signOut}
+                className="p-2.5 bg-white/5 border border-white/10 rounded-xl text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                title="Terminate Session"
+              >
+                <LogOut size={18} className="sm:w-5 sm:h-5 w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </header>
 
         <div className="flex-1 flex overflow-hidden min-h-0 relative">
           <div className={`flex-1 flex flex-col min-h-0 transition-all duration-500 w-full`}>

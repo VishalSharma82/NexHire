@@ -95,3 +95,34 @@ export const getAIResponse = async (input, config = {}) => {
     throw new Error(error.message || "Failed to get AI response");
   }
 };
+
+export const getSpeechResponse = async (text) => {
+  const apiKey = import.meta.env.VITE_OPENAI_API_KEY || "";
+  if (!apiKey) {
+    // Fallback to Browser TTS if no API key
+    return new Promise((resolve) => {
+      const utterance = new SpeechSynthesisUtterance(text);
+      window.speechSynthesis.speak(utterance);
+      resolve(null); // Return null since we're using browser TTS directly
+    });
+  }
+
+  try {
+    const openai = new OpenAI({
+      apiKey,
+      dangerouslyAllowBrowser: true,
+    });
+
+    const mp3 = await openai.audio.speech.create({
+      model: "tts-1",
+      voice: "alloy", // alloy, echo, fable, onyx, nova, shimmer
+      input: text,
+    });
+
+    const blob = new Blob([await mp3.arrayBuffer()], { type: 'audio/mpeg' });
+    return URL.createObjectURL(blob);
+  } catch (error) {
+    console.error("TTS Error:", error);
+    throw error;
+  }
+};

@@ -1,6 +1,7 @@
-import { useState, useRef } from 'react';
-import { Send, Sparkles, Languages, ChevronDown, Paperclip, FileText, UserCircle } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Send, Sparkles, Languages, ChevronDown, Paperclip, FileText, UserCircle, Mic, MicOff, Volume2, VolumeX } from 'lucide-react';
 import { useInterview } from '../context/InterviewContext';
+import { useVoice } from '../context/VoiceContext';
 import * as pdfjs from 'pdfjs-dist';
 import mammoth from 'mammoth';
 import pdfWorker from 'pdfjs-dist/build/pdf.worker.mjs?url';
@@ -14,6 +15,17 @@ const InputBox = ({ onSend, loading, onCategoryChange, category }) => {
   const [isParsing, setIsParsing] = useState(false);
   const fileInputRef = useRef(null);
   const { mode, toggleMode, persona, setPersona, setResume } = useInterview();
+  const { isVoiceEnabled, setIsVoiceEnabled, isListening, startListening, stopListening, transcript, stopSpeaking, isSpeaking } = useVoice();
+
+  // Update input when transcript changes
+  useEffect(() => {
+    if (transcript) setInput(transcript);
+  }, [transcript]);
+
+  const toggleVoice = () => {
+    setIsVoiceEnabled(!isVoiceEnabled);
+    if (isVoiceEnabled) stopSpeaking();
+  };
 
   const extractPdfText = async (arrayBuffer) => {
     try {
@@ -101,6 +113,14 @@ const InputBox = ({ onSend, loading, onCategoryChange, category }) => {
             {mode === 'normal' && <Languages size={10} />}
             {mode === 'interviewer' ? 'Simulation' : mode === 'coach' ? 'Coach Mode' : 'Normal Chat'}
           </button>
+
+          <button
+            onClick={toggleVoice}
+            className={`text-[9px] font-black uppercase tracking-[0.15em] px-4 py-2 rounded-xl transition-all flex items-center gap-2 border shadow-sm ${isVoiceEnabled ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' : 'bg-gray-500/10 text-gray-500 border-gray-500/20'}`}
+          >
+            {isVoiceEnabled ? <Volume2 size={10} /> : <VolumeX size={10} />}
+            {isVoiceEnabled ? 'Voice Active' : 'Voice Off'}
+          </button>
         </div>
 
         {stagedFile && (
@@ -150,6 +170,23 @@ const InputBox = ({ onSend, loading, onCategoryChange, category }) => {
         </div>
 
         <div className="flex items-center gap-2">
+          {isVoiceEnabled && (
+            <button
+              type="button"
+              onClick={isListening ? stopListening : startListening}
+              className={`w-10 h-10 sm:w-14 sm:h-14 flex items-center justify-center rounded-[1rem] sm:rounded-[1.5rem] transition-all duration-500 relative group overflow-hidden ${isListening ? 'bg-red-500 text-white shadow-glow-red animate-pulse' : 'bg-white/5 text-gray-400 hover:text-primary hover:bg-white/10'}`}
+            >
+              {isListening ? (
+                <>
+                  <Mic size={20} className="relative z-10" />
+                  <div className="absolute inset-0 bg-red-400/20 animate-ping" />
+                </>
+              ) : (
+                <Mic size={20} />
+              )}
+            </button>
+          )}
+
           <button
             type="submit"
             disabled={loading || isParsing || (!input.trim() && !stagedFile)}
